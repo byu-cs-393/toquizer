@@ -43,12 +43,20 @@ kbd {
   will-change: transform;
 }
 #codewrap.gone { opacity: 0; pointer-events: none; }
-#codeinner, .codecard {
+#codeinner {
   display: inline-block; padding: 2rem 2.6rem;
   background: #f7f8fa; border-radius: 1rem;
   box-shadow: 0 1.5rem 4rem #0008;
 }
-#codeinner pre.code, .codecard pre.code { font-size: 26px; color: #24292f; }
+#codeinner pre.code { font-size: 26px; color: #24292f; }
+
+/* The follow-up snippet shown next to an explanation. Same palette, but it has
+   to live inside the stage next to bars and prose, not own the screen. */
+.codecard {
+  display: block; margin-top: .8rem; padding: .9rem 1.1rem;
+  background: #f7f8fa; border-radius: .6rem; max-width: 100%; overflow-x: auto;
+}
+.codecard pre.code { font-size: clamp(12px, 1.05vw, 19px); color: #24292f; }
 /* the deck's light palette, since the code card is light */
 #codeinner .tok-kw, .codecard .tok-kw  { color: #a626a4; }
 #codeinner .tok-fn, .codecard .tok-fn  { color: #4078f2; }
@@ -61,9 +69,15 @@ kbd {
 #stage {
   position: fixed; inset: 4.2rem 0 2.6rem 0; z-index: 20;
   display: flex; flex-direction: column; justify-content: center;
+  /* "safe" keeps a too-tall screen from centring its overflow off the top,
+     where it would be both clipped and unreachable. */
+  justify-content: safe center;
+  overflow-y: auto; overscroll-behavior: contain;
   padding: 1.2rem 2.6rem;
   transition: padding-left .8s cubic-bezier(.65, 0, .25, 1);
 }
+#stage > * { flex: none; }
+#fit { width: 100%; transform-origin: top center; }
 body.docked #stage { padding-left: 36vw; }
 /* While the code owns the screen the heading sits above it rather than behind
    it - white text on the light code card is invisible. */
@@ -146,7 +160,7 @@ body.phase-code .prompt-big { font-size: clamp(1.2rem, 2.1vw, 2.05rem); margin-b
 
 /* ---------------- free text wall ---------------- */
 .wall { display: grid; gap: .6rem; grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr));
-  max-height: 100%; overflow-y: auto; align-content: start; padding-right: .4rem; }
+  max-height: 62vh; overflow-y: auto; align-content: start; padding-right: .4rem; }
 .card { background: var(--panel); border: 1px solid var(--line); border-radius: .7rem; padding: .7rem .85rem; }
 .card .from { font-size: .78rem; color: var(--accent); font-weight: 700; margin-bottom: .3rem; }
 .card .body { font-size: 1rem; line-height: 1.4; white-space: pre-wrap; }
@@ -159,7 +173,7 @@ body.phase-code .prompt-big { font-size: clamp(1.2rem, 2.1vw, 2.05rem); margin-b
 }
 
 /* ---------------- lobby ---------------- */
-.lobby { display: flex; align-items: center; gap: 4vw; justify-content: center; height: 100%; }
+.lobby { display: flex; align-items: center; gap: 4vw; justify-content: center; min-height: 60vh; }
 .lobby .join { text-align: center; }
 .lobby .url {
   font-family: var(--mono); font-size: clamp(1.6rem, 4vw, 4rem); font-weight: 700;

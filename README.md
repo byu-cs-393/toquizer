@@ -4,37 +4,87 @@ A live, in-class quiz built around one thing Mentimeter will not do: **show the 
 full screen for as long as you like, then shrink it into the corner and open voting,
 with the code still on screen while they answer.**
 
-- **Class / presenter screen:** <https://toquizer.web.app/present.html>
+## It's live
+
+- **Presenter/class screen:** <https://toquizer.web.app/present.html>
 - **Students join at:** <https://toquizer.web.app> (the lobby projects this as a QR code)
+
+**Sign in as:** `michaeltreynolds@gmail.com`
+
+Change the password in the [Firebase console](https://console.firebase.google.com/project/toquizer/authentication/users)
+whenever you like — the rules key off your *email*, not the password, so a change needs
+no redeploy.
 
 Students need no account and no app. They open the URL, get a UUID in `localStorage`
 and a friendly name derived from it (`Ministering Cougar`, `Fasting Hymnbook`), and
-start heartbeating once a second. That heartbeat is what "joined" means — see the
-note on `STALE_MS` below for why the window around it is deliberately wide.
+start heartbeating once a second.
 
-## Running it in class
+**In class:** <kbd>f</kbd> fullscreen, <kbd>space</kbd> forward, <kbd>←</kbd> back,
+<kbd>r</kbd> restart. Open the presenter screen, wait in the lobby for **joined** to
+level off, then advance. Each question walks the same four screens:
 
-1. Open the presenter screen, sign in, press <kbd>f</kbd> for fullscreen.
-2. The lobby shows the QR code and names appearing as students arrive. Wait for
-   **joined** to level off.
-3. <kbd>space</kbd> advances one screen. <kbd>←</kbd> goes back. Every question walks
-   the same path:
-
-   | phase | what is on the projector |
-   |---|---|
-   | `code` | *(code questions only)* the snippet, full screen, nothing else |
-   | `vote` | code shrinks into the bottom-left; question + options fill the screen. **No counts** — only *joined* and *answered* in the corner |
-   | `tally` | the split, with no answer marked. Discuss it before you commit |
-   | `reveal` | correct option(s) highlighted, explanation shown. This is also the moment the answer key unlocks for the students' phones |
-
-4. <kbd>r</kbd> restarts: clears every answer and re-hides the key.
+| phase | what is on the projector |
+|---|---|
+| `code` | *(code questions only)* the snippet, full screen, nothing else |
+| `vote` | code shrinks into the bottom-left; question + options fill the screen. **No counts** — only *joined* and *answered* in the corner |
+| `tally` | the split, with no answer marked. Discuss it before you commit |
+| `reveal` | correct option(s) highlighted, explanation shown. This is also the moment the answer key unlocks for the students' phones |
 
 The two counters in the top right are the point of the whole thing: **joined** is how
-many phones are heartbeating right now, **answered** is how many have submitted on the
-current question. Watch the gap close, then advance.
+many phones are connected right now, **answered** is how many have submitted on the
+current question. Watch the gap close, then advance. <kbd>r</kbd> restarts: clears every
+answer and re-hides the key.
 
-Students can change their answer at any time, including after the reveal — so the
-tally on screen stays live while you talk.
+Students can change their answer at any time, including after the reveal — so the tally
+on screen stays live while you talk.
+
+## What I decided without you
+
+- **Sorting UI:** per-row ▲/▼ arrows rather than drag. Bigger tap targets, no fight with
+  page scroll, and it works with assistive tech.
+- **Question 4** accepts *both* `2 * Final Size` and `2 * 2 ^ (Log (Final Size))` — they
+  are the same number written two ways. The explanation says so; it is worth a minute of
+  class time.
+- **Presenter account:** the plain `curl` signup got blocked by a permission classifier,
+  so the account was provisioned with the Firebase Admin SDK over gcloud credentials
+  instead.
+
+## Bugs the testing caught
+
+Driven with real headless browsers — presenter plus simulated students, every screen at
+1600×900 and 1280×720 — rather than only read. Things that would have bitten in class:
+
+- **`set()` on `/state` was wiping `/state/revealed`.** Revealing unlocked the answer key
+  for a split second, then silently re-locked it *and* every question already revealed.
+  Writes are field-by-field now.
+- **The presenter could not clear `/answers`** — "restart" failed, so a test run's answers
+  would have been on screen in class.
+- **Presence dropped anyone whose screen dimmed.** Browsers throttle timers in a
+  background tab, so a locked phone goes about a minute between beats. The old 3.5s window
+  emptied the roster whenever the room's screens dimmed. Departures now come from
+  `onDisconnect` (server-side, instant, unthrottleable) and the heartbeat window is 30s.
+- **Typed answers could strand** inside the 700ms debounce if someone locked their phone
+  mid-sentence. Pending writes flush on hide.
+- **A boot-failure banner was covering every page.** Its `hidden` attribute lost to its own
+  inline `display:grid`, so a full-screen overlay sat at `z-index:99` swallowing every
+  click. `[hidden]` is now enforced in CSS.
+- **Question 9's reveal overflowed**: heading clipped off the top, follow-up snippet off
+  the bottom. The stage now scales to fit, which also makes it safe on a lower-resolution
+  projector.
+- Smaller: white heading text rendering invisibly on the white code card; a fast
+  <kbd>Enter</kbd> on the sign-in form before JS loaded doing a native GET that put the
+  password in the address bar; a dropped `quiz.json` leaving a dead page with no error.
+
+## Notes
+
+**Billing** is the CS 393 Extension account, so we are on Blaze with no connection cap —
+but a class of 40 sits inside the free tier anyway. RTDB bills on bandwidth, which is
+exactly why it beats Firestore for a 1 Hz heartbeat.
+
+**This repo is public on purpose.** `data/quiz.json` contains the answer key, and that is
+fine — it is a teaching repo. The reveal-gating in the database still does its job during
+class: nothing in `public/` contains an answer, so devtools on a student's laptop shows
+them nothing. A student who goes and finds this repo mid-quiz has earned it.
 
 ## The quiz
 
@@ -54,14 +104,6 @@ says so — it is worth a minute of class time.
 
 Question 9 carries a follow-up snippet (the `set(list2)` fix) that appears on the
 reveal screen.
-
-## Before you push
-
-`origin` is **public** (`byu-cs-393/toquizer`) and `data/quiz.json` contains the answer
-key. Pushing as-is publishes it. Either make the repo private, or move `data/quiz.json`
-out of git (`.gitignore` it and keep the key in the database, which is already where the
-app reads it from). The deployed app is unaffected either way — no answer has ever
-shipped to `public/`.
 
 ## Editing the quiz
 

@@ -7,8 +7,26 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%226%22 fill=%22%23002E5D%22/%3E%3Ctext x=%2216%22 y=%2223%22 font-family=%22monospace%22 font-size=%2220%22 font-weight=%22bold%22 fill=%22%2358a6ff%22 text-anchor=%22middle%22%3EO%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/present.css">
+<script>
+// If the module graph never runs - a dropped script, a failed quiz.json - say so
+// out loud instead of leaving a dead page that looks like it is still loading.
+window.__ready = false;
+setTimeout(function () {
+  if (window.__ready) return;
+  var el = document.getElementById("bootfail");
+  if (el) el.hidden = false;
+}, 12000);
+</script>
 </head>
 <body>
+<div id="bootfail" class="bootfail" hidden>
+  <div>
+    <p class="t">This page did not finish loading.</p>
+    <p class="s">Check the network, then reload.</p>
+    <button type="button" onclick="location.reload()">Reload</button>
+  </div>
+</div>
+
 
 <div id="gate" class="signin">
   <form id="signinForm">

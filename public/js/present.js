@@ -9,6 +9,8 @@ import { QUIZ, phasesFor, questionAt, LETTERS, isCorrect } from "./quiz.js";
 import { codeBlock } from "./hl.js";
 import qrcode from "./vendor/qrcode.mjs";
 
+window.__ready = true;   // the boot watchdog in the HTML stands down
+
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
@@ -182,7 +184,7 @@ function wireKeys() {
     t = setTimeout(() => $("ctl").classList.add("dim"), 2500);
   });
   setTimeout(() => $("ctl").classList.add("dim"), 2500);
-  addEventListener("resize", () => placeCode());   // drop the Event arg
+  addEventListener("resize", () => { placeCode(); fitStage(); });
 }
 
 /* ---------------- the code panel ---------------- */
@@ -254,15 +256,40 @@ function render() {
   const key = state.qIndex + "|" + phase;
   if (key !== lastRenderKey) {
     lastRenderKey = key;
-    stage.innerHTML = "";
-    build(stage, q, phase);
+    stage.innerHTML = '<div id="fit"></div>';
+    build($("fit"), q, phase);
   } else {
-    refresh(stage, q, phase);
+    refresh($("fit"), q, phase);
   }
 
   // After the stage exists: placeCode measures the prompt to know where the
   // full-screen code may start, so the card never lands under the heading.
   setCode(q, phase !== "code");
+  fitStage();
+}
+
+/* Scale a too-tall screen down until it fits. A reveal carrying bars, an
+   explanation and a follow-up snippet overflows on a 720p projector even though
+   it fits at 900p, and nobody wants to scroll a projector mid-sentence. The
+   height is set alongside the transform because a transform does not change
+   layout, and the flex centring above works off the layout box. */
+function fitStage() {
+  const stage = $("stage"), fit = $("fit");
+  if (!fit) return;
+  fit.style.transform = "";
+  fit.style.height = "";
+  const need = fit.getBoundingClientRect().height;
+  // clientHeight includes the stage's own padding; the content box is what the
+  // child actually gets. Measuring against the former lets every screen keep
+  // ~38px it does not have, which is exactly enough to slide under the footer.
+  const cs = getComputedStyle(stage);
+  const avail = stage.clientHeight
+    - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - 4;
+  if (need > avail && need > 0) {
+    const k = Math.max(0.5, avail / need);
+    fit.style.transform = "scale(" + k + ")";
+    fit.style.height = need * k + "px";
+  }
 }
 
 function build(stage, q, phase) {
@@ -509,7 +536,6 @@ function putExplain(el, key) {
   if (key.explainCode) {
     const light = document.createElement("div");
     light.className = "codecard";
-    light.style.cssText = "margin-top:1rem;display:inline-block";
     light.append(codeBlock(key.explainCode));
     el.append(light);
   }

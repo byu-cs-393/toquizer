@@ -1,5 +1,24 @@
 // The public half of the quiz: prompts, options, code. Never the answers.
-export const QUIZ = await fetch("quiz.json", { cache: "no-cache" }).then((r) => r.json());
+//
+// Retried, because this is a top-level await: if it throws, the whole module
+// graph fails and the page sits there looking merely slow. Classroom wifi drops
+// a request now and then and that should not end the lesson.
+async function loadQuiz() {
+  let last;
+  for (let attempt = 0; attempt < 4; attempt++) {
+    try {
+      const r = await fetch("quiz.json", { cache: "no-cache" });
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return await r.json();
+    } catch (e) {
+      last = e;
+      await new Promise((res) => setTimeout(res, 400 * (attempt + 1)));
+    }
+  }
+  throw last;
+}
+
+export const QUIZ = await loadQuiz();
 
 // Phases a question walks through. A question with code gets an extra screen
 // first where the code owns the whole projector; when voting opens the same

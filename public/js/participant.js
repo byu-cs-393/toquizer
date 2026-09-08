@@ -9,6 +9,8 @@ import { nameFor, newUuid } from "./names.js";
 import { QUIZ, questionAt, LETTERS, isCorrect } from "./quiz.js";
 import { codeBlock } from "./hl.js";
 
+window.__ready = true;   // the boot watchdog in the HTML stands down
+
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
