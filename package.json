@@ -1,0 +1,14 @@
+{
+  "name": "toquizer",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A live in-class quiz for CS 393: show the code, then shrink it into the corner and collect answers.",
+  "scripts": {
+    "build": "node tools/build.mjs",
+    "deploy": "node tools/build.mjs && firebase deploy --only database,hosting --project toquizer && firebase database:set /key .tmp/key.json --project toquizer --force",
+    "seed": "node tools/build.mjs && firebase database:set /key .tmp/key.json --project toquizer --force",
+    "reset": "node tools/reset.mjs",
+    "serve": "firebase serve --only hosting --project toquizer"
+  }
+}

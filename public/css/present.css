@@ -1,0 +1,184 @@
+html, body { overflow: hidden; height: 100%; }
+
+/* ---------------- chrome ---------------- */
+header.top {
+  position: fixed; inset: 0 0 auto 0; height: 4.2rem; z-index: 30;
+  display: flex; align-items: center; gap: .9rem; padding: 0 1.4rem;
+  background: linear-gradient(180deg, var(--navy), #002a55ee);
+  border-bottom: 1px solid var(--line);
+}
+header.top .title { font-weight: 750; font-size: 1.15rem; letter-spacing: .01em; }
+header.top .qcount { color: var(--ink-dim); font-size: .95rem; }
+header.top .right { margin-left: auto; display: flex; align-items: center; gap: .6rem; font-size: 1rem; }
+.pill.live b { color: var(--accent); font-size: 1.15em; }
+.pill.ans b { color: var(--correct); font-size: 1.15em; }
+
+footer.ctl {
+  position: fixed; inset: auto 0 0 0; z-index: 30;
+  display: flex; align-items: center; gap: .6rem; padding: .55rem 1.4rem;
+  background: #02101fdd; border-top: 1px solid var(--line);
+  font-size: .84rem; color: var(--ink-dim);
+  transition: opacity .3s;
+}
+footer.ctl.dim { opacity: .12; }
+footer.ctl:hover { opacity: 1; }
+footer.ctl button {
+  background: var(--panel-2); border: 1px solid var(--line); color: var(--ink);
+  border-radius: .45rem; padding: .35rem .8rem;
+}
+footer.ctl .spacer { margin-left: auto; }
+kbd {
+  font-family: var(--mono); font-size: .78em; background: var(--panel-2);
+  border: 1px solid var(--line); border-bottom-width: 2px; border-radius: .3rem; padding: .1em .4em;
+}
+
+/* ---------------- the code panel ----------------
+   Rendered once at a fixed natural size, then translated + scaled into place.
+   Animating a transform (not width/font-size) keeps it on the compositor, so
+   the shrink-to-the-corner move stays smooth on a podium machine. */
+#codewrap {
+  position: fixed; top: 0; left: 0; z-index: 10;
+  transform-origin: top left;
+  transition: transform .8s cubic-bezier(.65, 0, .25, 1), opacity .4s;
+  will-change: transform;
+}
+#codewrap.gone { opacity: 0; pointer-events: none; }
+#codeinner, .codecard {
+  display: inline-block; padding: 2rem 2.6rem;
+  background: #f7f8fa; border-radius: 1rem;
+  box-shadow: 0 1.5rem 4rem #0008;
+}
+#codeinner pre.code, .codecard pre.code { font-size: 26px; color: #24292f; }
+/* the deck's light palette, since the code card is light */
+#codeinner .tok-kw, .codecard .tok-kw  { color: #a626a4; }
+#codeinner .tok-fn, .codecard .tok-fn  { color: #4078f2; }
+#codeinner .tok-str, .codecard .tok-str { color: #50a14f; }
+#codeinner .tok-num, .codecard .tok-num { color: #c18401; }
+#codeinner .tok-com, .codecard .tok-com { color: #a0a1a7; }
+#codeinner .tok-typ, .codecard .tok-typ { color: #0184bc; }
+
+/* ---------------- stage ---------------- */
+#stage {
+  position: fixed; inset: 4.2rem 0 2.6rem 0; z-index: 20;
+  display: flex; flex-direction: column; justify-content: center;
+  padding: 1.2rem 2.6rem;
+  transition: padding-left .8s cubic-bezier(.65, 0, .25, 1);
+}
+body.docked #stage { padding-left: 36vw; }
+/* While the code owns the screen the heading sits above it rather than behind
+   it - white text on the light code card is invisible. */
+body.phase-code #stage { justify-content: flex-start; padding-top: .6rem; }
+body.phase-code .prompt-big { font-size: clamp(1.2rem, 2.1vw, 2.05rem); margin-bottom: .3rem; }
+
+.prompt-big {
+  font-size: clamp(1.6rem, 3.1vw, 3rem); font-weight: 700; line-height: 1.15;
+  margin: 0 0 1.4rem;
+}
+.prompt-big .tag {
+  display: inline-block; vertical-align: middle; margin-right: .6rem;
+  font-size: .42em; letter-spacing: .12em; font-weight: 700;
+  background: var(--warn); color: #04162b; padding: .25em .7em; border-radius: .3em;
+}
+.help-big { font-size: 1.05rem; color: var(--ink-dim); margin: -.9rem 0 1.3rem; }
+
+/* option grid while voting (no counts shown yet) */
+.opts-big { display: grid; gap: .7rem; grid-template-columns: repeat(2, 1fr); }
+.opts-big.one { grid-template-columns: 1fr; }
+.opt-big {
+  display: flex; align-items: center; gap: .9rem;
+  background: var(--panel); border: 2px solid var(--line); border-radius: .8rem;
+  padding: .9rem 1.1rem; font-size: clamp(1rem, 1.55vw, 1.5rem);
+}
+.opt-big .letter {
+  flex: none; width: 2.1rem; height: 2.1rem; border-radius: .45rem;
+  display: grid; place-items: center; font-weight: 800;
+  background: var(--panel-2); color: var(--ink-dim); font-size: .85em;
+}
+
+/* ---------------- result bars ---------------- */
+.bars { display: flex; flex-direction: column; gap: .55rem; }
+.bar {
+  position: relative; overflow: hidden;
+  display: flex; align-items: center; gap: .9rem;
+  background: var(--panel); border: 2px solid var(--line); border-radius: .8rem;
+  padding: .85rem 1.1rem; font-size: clamp(1rem, 1.5vw, 1.45rem);
+}
+.bar .fill {
+  position: absolute; inset: 0 auto 0 0; width: 0;
+  background: #1d4a7a; transition: width .6s cubic-bezier(.3,0,.2,1); z-index: 0;
+}
+.bar > *:not(.fill) { position: relative; z-index: 1; }
+.bar .letter {
+  flex: none; width: 2.1rem; height: 2.1rem; border-radius: .45rem;
+  display: grid; place-items: center; font-weight: 800;
+  background: var(--panel-2); color: var(--ink-dim); font-size: .85em;
+}
+.bar .txt { flex: 1; }
+.bar .n { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--ink-dim); }
+.bar .n .pct { color: var(--ink); margin-left: .6em; }
+.bar.correct { border-color: var(--correct); }
+.bar.correct .fill { background: var(--correct-d); }
+.bar.correct .letter { background: var(--correct); color: #04162b; }
+.bar.correct .n .pct { color: var(--correct); }
+.bar.dim { opacity: .55; }
+
+/* ---------------- ordering results ---------------- */
+.ordres { display: flex; flex-direction: column; gap: .4rem; }
+.ordres .row {
+  display: flex; align-items: center; gap: .9rem;
+  background: var(--panel); border: 1px solid var(--line); border-radius: .6rem;
+  padding: .55rem .9rem; font-size: clamp(.95rem, 1.35vw, 1.3rem);
+  position: relative; overflow: hidden;
+}
+.ordres .row .fill { position: absolute; inset: 0 auto 0 0; background: #1d4a7a; z-index: 0; transition: width .6s; }
+.ordres .row > *:not(.fill) { position: relative; z-index: 1; }
+.ordres .rank {
+  flex: none; width: 2rem; height: 2rem; border-radius: .4rem; display: grid; place-items: center;
+  background: var(--correct); color: #04162b; font-weight: 800; font-size: .82em;
+}
+.ordres .label { flex: 1; font-family: var(--mono); }
+.ordres .pct { font-variant-numeric: tabular-nums; color: var(--ink-dim); font-size: .9em; }
+
+.headline {
+  font-size: clamp(1.1rem, 1.9vw, 1.8rem); margin: 0 0 1rem; color: var(--ink-dim);
+}
+.headline b { color: var(--correct); font-size: 1.25em; }
+
+/* ---------------- free text wall ---------------- */
+.wall { display: grid; gap: .6rem; grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr));
+  max-height: 100%; overflow-y: auto; align-content: start; padding-right: .4rem; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: .7rem; padding: .7rem .85rem; }
+.card .from { font-size: .78rem; color: var(--accent); font-weight: 700; margin-bottom: .3rem; }
+.card .body { font-size: 1rem; line-height: 1.4; white-space: pre-wrap; }
+
+/* ---------------- explanation ---------------- */
+.explain {
+  margin-top: 1.2rem; padding: 1rem 1.2rem; border-left: 4px solid var(--correct);
+  background: #0f3b2c66; border-radius: .5rem;
+  font-size: clamp(.95rem, 1.35vw, 1.3rem); line-height: 1.45;
+}
+
+/* ---------------- lobby ---------------- */
+.lobby { display: flex; align-items: center; gap: 4vw; justify-content: center; height: 100%; }
+.lobby .join { text-align: center; }
+.lobby .url {
+  font-family: var(--mono); font-size: clamp(1.6rem, 4vw, 4rem); font-weight: 700;
+  color: var(--accent); letter-spacing: -.01em;
+}
+.lobby .lead { font-size: 1.2rem; color: var(--ink-dim); margin-bottom: .6rem; }
+.lobby #qr { background: #fff; padding: 1rem; border-radius: .8rem; line-height: 0; }
+.lobby #qr img, .lobby #qr canvas { width: clamp(11rem, 20vw, 20rem); height: auto; image-rendering: pixelated; }
+.roster { margin-top: 2rem; display: flex; flex-wrap: wrap; gap: .4rem; justify-content: center; max-height: 22vh; overflow: hidden; }
+.roster span { background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: .25em .8em; font-size: .95rem; }
+.roster span.new { animation: pop .4s ease-out; }
+@keyframes pop { from { transform: scale(.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+/* ---------------- sign in ---------------- */
+.signin { display: grid; place-items: center; height: 100dvh; }
+.signin form { background: var(--panel); border: 1px solid var(--line); border-radius: 1rem;
+  padding: 2rem; display: flex; flex-direction: column; gap: .8rem; width: min(24rem, 90vw); }
+.signin h1 { margin: 0 0 .4rem; font-size: 1.3rem; }
+.signin input { padding: .7rem; border-radius: .5rem; border: 1px solid var(--line);
+  background: var(--bg); color: var(--ink); font: inherit; }
+.signin button { padding: .7rem; border-radius: .5rem; border: 0; background: var(--accent); color: #04162b; font-weight: 700; }
+.signin .err { color: #ff8b91; font-size: .9rem; min-height: 1.2em; }

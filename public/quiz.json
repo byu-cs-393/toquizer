@@ -1,0 +1,276 @@
+{
+  "id": "big-o",
+  "title": "Big O Quiz",
+  "subtitle": "CS 393",
+  "questions": [
+    {
+      "id": "order",
+      "type": "order",
+      "prompt": "Order these from biggest to smallest",
+      "help": "Use the arrows to move each row. Position 1 is the biggest.",
+      "options": [
+        {
+          "id": "logn",
+          "text": "O(Log N)"
+        },
+        {
+          "id": "one",
+          "text": "O(1)"
+        },
+        {
+          "id": "n100",
+          "text": "O(N^100)"
+        },
+        {
+          "id": "twon",
+          "text": "O(2^N)"
+        },
+        {
+          "id": "fact",
+          "text": "O(N!)"
+        },
+        {
+          "id": "n3",
+          "text": "O(N^3)"
+        },
+        {
+          "id": "n2",
+          "text": "O(N^2)"
+        },
+        {
+          "id": "nlogn",
+          "text": "O(N Log N)"
+        },
+        {
+          "id": "n",
+          "text": "O(N)"
+        }
+      ]
+    },
+    {
+      "id": "labels",
+      "type": "multi",
+      "prompt": "Which of these are correct?",
+      "help": "Select every pairing that is correctly named.",
+      "options": [
+        {
+          "id": "a",
+          "text": "O(1) Constant"
+        },
+        {
+          "id": "b",
+          "text": "O(N^2) Exponential"
+        },
+        {
+          "id": "c",
+          "text": "O(N^3) Quadratic"
+        },
+        {
+          "id": "d",
+          "text": "O(N!) Factorial"
+        },
+        {
+          "id": "e",
+          "text": "O(LogN) LogN"
+        },
+        {
+          "id": "f",
+          "text": "O(N) Linear"
+        }
+      ]
+    },
+    {
+      "id": "nmk",
+      "type": "text",
+      "prompt": "Give an example with explanation of an algorithm that could be O(N+M+K)",
+      "help": "A sentence or two is plenty."
+    },
+    {
+      "id": "arraylist",
+      "type": "mc",
+      "prompt": "A Java ArrayList doubles capacity each time it reaches capacity. Which option describes the amortized Big O of inserting into an ArrayList?",
+      "tag": "ACADEMIC",
+      "options": [
+        {
+          "id": "a",
+          "text": "Final Size * Log (Final Size)"
+        },
+        {
+          "id": "b",
+          "text": "2 * 2 ^ (Log (Final Size))"
+        },
+        {
+          "id": "c",
+          "text": "2 * Final Size"
+        }
+      ]
+    },
+    {
+      "id": "code1",
+      "type": "mc",
+      "prompt": "(1 of 5) What is the efficiency?",
+      "code": {
+        "lang": "csharp",
+        "source": "static int ComputeSum(List<int> numbers)\n{\n    int sum = 0;\n    foreach (int num in numbers)\n    {\n        sum += num;\n    }\n    return sum;\n}"
+      },
+      "options": [
+        {
+          "id": "const",
+          "text": "O(1) Constant"
+        },
+        {
+          "id": "log",
+          "text": "Log(N)"
+        },
+        {
+          "id": "lin",
+          "text": "O(N) Linear"
+        },
+        {
+          "id": "nlogn",
+          "text": "N Log(N)"
+        },
+        {
+          "id": "quad",
+          "text": "O(N^2) Quadratic"
+        },
+        {
+          "id": "exp",
+          "text": "O(2^N) Exponential"
+        }
+      ]
+    },
+    {
+      "id": "code2",
+      "type": "mc",
+      "prompt": "(2 of 5) What is the efficiency?",
+      "code": {
+        "lang": "python",
+        "source": "def foo(n):\n    if n < 1:\n        return n\n    return foo(n / 2)"
+      },
+      "options": [
+        {
+          "id": "const",
+          "text": "O(1) Constant"
+        },
+        {
+          "id": "log",
+          "text": "Log(N)"
+        },
+        {
+          "id": "lin",
+          "text": "O(N) Linear"
+        },
+        {
+          "id": "nlogn",
+          "text": "N Log(N)"
+        },
+        {
+          "id": "quad",
+          "text": "O(N^2) Quadratic"
+        },
+        {
+          "id": "exp",
+          "text": "O(2^N) Exponential"
+        }
+      ]
+    },
+    {
+      "id": "code3",
+      "type": "mc",
+      "prompt": "(3 of 5) What is the efficiency?",
+      "code": {
+        "lang": "python",
+        "source": "def bar(n):\n    if n <= 1:\n        return n\n    return bar(n - 1) + bar(n - 2)"
+      },
+      "options": [
+        {
+          "id": "const",
+          "text": "O(1) Constant"
+        },
+        {
+          "id": "log",
+          "text": "Log(N)"
+        },
+        {
+          "id": "lin",
+          "text": "O(N) Linear"
+        },
+        {
+          "id": "nlogn",
+          "text": "N Log(N)"
+        },
+        {
+          "id": "quad",
+          "text": "O(N^2) Quadratic"
+        },
+        {
+          "id": "exp",
+          "text": "O(2^N) Exponential"
+        }
+      ]
+    },
+    {
+      "id": "code4",
+      "type": "mc",
+      "prompt": "(4 of 5) What is the efficiency?",
+      "code": {
+        "lang": "python",
+        "source": "def grow_string(size):\n    result = \"\"\n    for _ in range(size):\n        result += \"a\"\n    return result\n\n# Example usage\nresult = grow_string(100000)"
+      },
+      "options": [
+        {
+          "id": "const",
+          "text": "O(1) Constant"
+        },
+        {
+          "id": "log",
+          "text": "Log(N)"
+        },
+        {
+          "id": "lin",
+          "text": "O(N) Linear"
+        },
+        {
+          "id": "nlogn",
+          "text": "N Log(N)"
+        },
+        {
+          "id": "quad",
+          "text": "O(N^2) Quadratic"
+        },
+        {
+          "id": "exp",
+          "text": "O(2^N) Exponential"
+        }
+      ]
+    },
+    {
+      "id": "code5",
+      "type": "mc",
+      "prompt": "(5 of 5) What is the efficiency?",
+      "code": {
+        "lang": "python",
+        "source": "def count_common_elements(list1, list2):\n    count = 0\n    for elem1 in list1:\n        if elem1 in list2:\n            count += 1\n    return count"
+      },
+      "options": [
+        {
+          "id": "const",
+          "text": "O(1) Constant"
+        },
+        {
+          "id": "lognm",
+          "text": "Log(N + M)"
+        },
+        {
+          "id": "linnm",
+          "text": "O(N + M) Linear"
+        },
+        {
+          "id": "nm",
+          "text": "O(N * M)"
+        }
+      ]
+    }
+  ]
+}
