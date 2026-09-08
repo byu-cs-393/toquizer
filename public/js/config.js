@@ -13,4 +13,13 @@ export const firebaseConfig = {
 export const PRESENTER_EMAIL = "michaeltreynolds@gmail.com";
 
 export const HEARTBEAT_MS = 1000;  // participant -> /presence/<uid>/t
-export const STALE_MS = 3500;      // no heartbeat for this long = dropped off
+
+// How stale a heartbeat may get before we stop counting someone as joined.
+//
+// Deliberately generous. Browsers throttle timers in a backgrounded tab - a
+// student who locks their phone or checks a message can go 60s between beats
+// while still connected and still about to answer, and a 3-4s window drops the
+// whole room the moment screens dim. Real departures do not wait for this
+// window anyway: onDisconnect().remove() runs server-side the instant the
+// socket closes, so this only sweeps up rows left by a hard kill.
+export const STALE_MS = 30000;

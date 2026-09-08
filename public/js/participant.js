@@ -60,21 +60,44 @@ function startHeartbeat() {
     dot.title = ok ? "connected" : "reconnecting...";
     if (ok) { onDisconnect(me).remove(); beat(); }
   });
+
+  // Coming back from a locked screen or another app: beat immediately rather
+  // than waiting out whatever interval the browser throttled us to.
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") beat();
+  });
 }
 
 /* ---------------- answers ---------------- */
 let saveTimer = null;
+let pending = null;      // a debounced write that has not gone out yet
+
 function saveAnswer(qid, v, opts) {
   const debounce = (opts && opts.debounce) || 0;
   myAnswers[qid] = v;
   clearTimeout(saveTimer);
   const write = () => {
+    pending = null;
     set(ref(db, "answers/" + qid + "/" + uid), { v: v, t: serverTimestamp() })
       .then(() => flash("Saved"))
       .catch((e) => flash("Not saved: " + e.message, true));
   };
-  if (debounce) saveTimer = setTimeout(write, debounce); else write();
+  if (debounce) { pending = write; saveTimer = setTimeout(write, debounce); }
+  else write();
 }
+
+/* Typing is debounced, so a half-second of it is still in the air when someone
+   locks their phone mid-sentence - and a backgrounded tab's timers are throttled
+   or frozen, which would strand it. Flush on the way out instead. */
+function flushPending() {
+  if (!pending) return;
+  clearTimeout(saveTimer);
+  pending();
+}
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "hidden") flushPending();
+});
+addEventListener("pagehide", flushPending);
 
 let flashTimer = null;
 function flash(msg, bad) {

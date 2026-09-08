@@ -9,7 +9,8 @@ with the code still on screen while they answer.**
 
 Students need no account and no app. They open the URL, get a UUID in `localStorage`
 and a friendly name derived from it (`Ministering Cougar`, `Fasting Hymnbook`), and
-start heartbeating once a second. That heartbeat is what "joined" means.
+start heartbeating once a second. That heartbeat is what "joined" means — see the
+note on `STALE_MS` below for why the window around it is deliberately wide.
 
 ## Running it in class
 
@@ -53,6 +54,14 @@ says so — it is worth a minute of class time.
 
 Question 9 carries a follow-up snippet (the `set(list2)` fix) that appears on the
 reveal screen.
+
+## Before you push
+
+`origin` is **public** (`byu-cs-393/toquizer`) and `data/quiz.json` contains the answer
+key. Pushing as-is publishes it. Either make the repo private, or move `data/quiz.json`
+out of git (`.gitignore` it and keep the key in the database, which is already where the
+app reads it from). The deployed app is unaffected either way — no answer has ever
+shipped to `public/`.
 
 ## Editing the quiz
 
@@ -104,6 +113,12 @@ Changing the presenter's email means changing it in **both** `database.rules.jso
 - Presence staleness is measured against the **server** clock via
   `.info/serverTimeOffset`. A podium PC with a skewed clock would otherwise show an
   empty room, or one that never empties.
+- **Departures come from `onDisconnect`, not from the heartbeat.** Browsers throttle
+  timers in a backgrounded tab, so a student who locks their phone can go a minute
+  between beats while still connected — a tight staleness window empties the roster
+  every time the room's screens dim. `STALE_MS` is 30s and only sweeps up rows left
+  behind by a hard kill; a closed tab is removed server-side the instant its socket
+  drops.
 - The friendly name is `hash(uuid)` through a murmur3 finalizer. The finalizer is not
   decoration: raw FNV-1a has weak low bits and `% 100` reads exactly those, which put
   duplicate names in a 40-person class at 26% instead of the 7.4% the birthday bound
